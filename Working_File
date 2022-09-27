@@ -1,0 +1,97 @@
+import PyPDF2
+import io
+import glob
+import os
+from PyPDF2 import PdfFileWriter, PdfFileReader
+from PyPDF2 import PdfMerger
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter, A1
+from collections import defaultdict
+from PyPDF2 import PdfReader
+
+PDF_file='Different_Dimension.pdf'
+inputpdf = PdfFileReader(open("Different_Dimension.pdf", "rb"))
+output = PdfFileWriter()
+reader=PdfReader(PDF_file)
+pdf = PyPDF2.PdfFileReader(PDF_file,"rb")
+PDF_List=[]
+Unique_PDF_Dimensions=[]
+pdfz=[]
+Filt_List=[]
+        
+#PageCoordinate(w,l)
+
+#Page Counter
+def page_counter(PDF_Name):
+    file=open(PDF_Name,'rb')
+    readpdf = PyPDF2.PdfFileReader(file)
+    totalpages = readpdf.numPages
+    print("There are a total of",totalpages,"pages in the PDF.")
+    return totalpages
+    
+def pdf_sizes(total_pages):
+    for i in range(int(total_pages)):
+        p = pdf.getPage(i)
+        w_in_user_space_units = p.mediaBox.getWidth()
+        h_in_user_space_units = p.mediaBox.getHeight()
+        # 1 user space unit is 1/72 inch
+        # 1/72 inch ~ 0.352 millimeters
+        w = float(p.mediaBox.getWidth()) * 0.352
+        h = float(p.mediaBox.getHeight()) * 0.352
+        #print(f"Page {i} size is {w}{h}")
+        string=str(w)+str(h)
+        print("Detected Size of Width: ",w,"mm and height: ",h,"mm")
+        #Append to List
+        PDF_List.append(string)
+        
+def unique(PDF_List):
+    # initialize a null list
+    unique_list = []
+    # traverse for all elements
+    for x in PDF_List:
+        # check if exists in unique_list or not
+        if x not in unique_list:
+            unique_list.append(x)
+    # print list
+    for x in unique_list:
+        Unique_PDF_Dimensions.append(x)  
+
+#def page_split(x):
+    #output.addPage(inputpdf.getPage(x))
+    #with open(f"Pg {x} "+PDF_file, "wb") as outputStream:
+        #output.write(outputStream)
+    #output.close()
+        
+#def Merge_back(Y):
+    #merger = PdfMerger()
+    #for i in pdfz:
+        #merger.append(i)
+    #merger.write(f"{Y}_Merged.pdf")
+    #merger.close()
+
+def match(Dimensions):
+    counter=0
+    for i in PDF_List:
+        if Dimensions in i:
+            #page_split(counter)
+            Filt_List.append(counter)
+            print("The following Index matches dimensions: ",counter)
+            counter+=1
+        else:
+            counter+=1
+    Add_write(Dimensions)
+
+def Add_write(x):
+    for i in Filt_List:
+        output.addPage(inputpdf.getPage(int(i)))
+    with open(f"Filtered "+PDF_file, "wb") as outputStream:
+            output.write(outputStream)
+    print(i)
+
+#Total Pages
+total_pages=page_counter(PDF_file)
+pdf_sizes(total_pages)
+unique(PDF_List)#print(PDF_List)
+print(f"PDF Dimension Scan Completed\nThe unique dimensions are: ",Unique_PDF_Dimensions)
+match(input("Which Unique Dimension pages do you want to extract?"))
+#Merge_back(PDF_file)
